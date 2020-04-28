@@ -1,68 +1,56 @@
 import requests as req
-from bs4 import BeautifulSoup # bs4 == Beautiful Soup, version 4
-sofia = 'http://weather.bg/0index.php?koiFail=RM01opasni2&ci=14&nd=1&lng=0'
-sofia = req.get(sofia)
-sofia_data = sofia.content #sofia.txt is not good with encoding
-sofia_html = BeautifulSoup(sofia_data, 'html.parser') #features="html5lib" got this parser from a PyCharm warning
-sofia_opasni = sofia_html.body.find('div', attrs={'class': 'opasnitxt'}).getText()
-sofia_tag = sofia_html.select('.gradove')
-sofia_table = str(sofia_tag[0])
-#
-yambol = 'http://weather.bg/0index.php?koiFail=RM01opasni2&ci=2368&nd=1&lng=0'
-yambol = req.get(yambol)
-yambol_data = yambol.content
-yambol_html = BeautifulSoup(yambol_data, 'html.parser')
-yambol_opasni = yambol_html.body.find('div', attrs={'class': 'opasnitxt'}).getText()
-yambol_tag = yambol_html.select('.gradove')
-yambol_table = str(yambol_tag[0])
-#
-varna = 'http://weather.bg/0index.php?koiFail=RM01opasni2&ci=9&nd=1&lng=0'
-varna = req.get(varna)
-varna_data = varna.content
-varna_html = BeautifulSoup(varna_data, 'html.parser')
-varna_opasni = varna_html.body.find('div', attrs={'class': 'opasnitxt'}).getText()
-varna_tag = varna_html.select('.gradove')
-varna_table = str(varna_tag[0])
-if ('Няма опасност' in sofia_table and 'Няма опасност' in yambol_table and 'Няма опасност' in varna_table):
-    print('Tomorrow is going to be a calm day.')
-else:
-    if 'Няма опасност' in sofia_table:
-        print('Sofia skipped')
-    else:
-        print(sofia_opasni)
-    if 'Няма опасност' in yambol_table:
-        print('Yambol skipped')
-    else:
-        print(yambol_opasni)
-    if 'Няма опасност' in varna_table:
-        print('Varna skipped')
-    else:
-        print(varna_opasni)
-input()
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    exit('За да работи, тази програма има нужда от модула Beautiful Soup. Инсталирам с командата : pip install bs4)')
 
-"""
-if 'Няма опасност' in sofia_table:
-    print('Sofia skipped')
-else:
-    print(sofia_opasni)
-if 'Няма опасност' in yambol_table:
-    print('Yambol skipped')
-else:
-    print(yambol_opasni)
-if 'Няма опасност' in varna_table:
-    print('Varna skipped')
-else:
-    print(varna_opasni)
-    
-    
-#
-elif ('Няма опасност' in varna_table or 'Няма опасност' in yambol_table):
-    print(sofia_opasni)
-    if 'Няма опасност' in yambol_table:
-        print('In Yambol tomorrow is going to be a calm day.')
-        if 'Няма опасност' in varna_table:
-            print('In Varna tomorrow is going to be a calm day.')
-        print(varna_opasni)
-    print(yambol_opasni)
-    
-"""
+def meteo(city):
+    res = req.get(city)
+    data = res.content
+    html = BeautifulSoup(data, 'html.parser')
+    opasni = html.body.find('div', attrs={'class': 'opasnitxt'}).getText()
+    tag = html.select('.gradove')
+    table = str(tag[0])
+    if 'Няма опасност' not in table:
+        print(opasni)
+    else:
+        print('Утре ще бъде спокойно.')
+
+city = input('Сега пиша името на региона, за който да разбера дали ще бъде опасно времето утре :')
+
+def identify(city):
+    return {
+        "Благоевград": 2303,
+        "Бургас": 10,
+        "Добрич": 8,
+        "Габрово": 2508,
+        "Кюстендил": 15,
+        "Кърджали": 13,
+        "Ловеч": 3,
+        "Монтана": 2,
+        "Пазарджик": 2321,
+        "Перник": 40,
+        "Плевен": 4,
+        "Пловдив": 12,
+        "Разград": 7, 
+        "Русе": 6,
+        "Шумен": 2310,
+        "Силистра": 2311,
+        "Сливен": 11,
+        "Смолян": 2351,
+        "Област София": 2510,
+        "София": 14,
+        "Търговище": 2399,
+        "Велико Търново": 5,
+        "Варна": 9,
+        "Видин": 1,
+        "Враца": 2305,
+        "Стара Загора": 2318,
+        "Хасково": 2320,
+        "Ямбол": 2368
+    }[city]
+
+# Актуални данни за различните региони на България от Националния Институт по Метереология и Хидрология
+city = f"http://weather.bg/0index.php?koiFail=RM01opasni2&ci={identify(city)}&nd=1&lng=0"
+
+meteo(city)
